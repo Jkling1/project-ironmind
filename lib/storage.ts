@@ -15,6 +15,12 @@ export const getDefaultUserData = (): UserData => {
     longestStreak: 0,
     totalDaysCompleted: 0,
     history: [],
+    budget: {
+      totalBudget: 0,
+      expenses: [],
+      savingsGoal: 0,
+      currentSavings: 0,
+    },
   }
 }
 
@@ -24,7 +30,19 @@ export const loadUserData = (): UserData => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (!stored) return getDefaultUserData()
-    return JSON.parse(stored)
+    const data = JSON.parse(stored)
+
+    // Backwards compatibility: add budget if it doesn't exist
+    if (!data.budget) {
+      data.budget = {
+        totalBudget: 0,
+        expenses: [],
+        savingsGoal: 0,
+        currentSavings: 0,
+      }
+    }
+
+    return data
   } catch (error) {
     console.error('Error loading user data:', error)
     return getDefaultUserData()
@@ -170,4 +188,35 @@ export const getWeeklyData = (userData: UserData) => {
   }
 
   return weekData
+}
+
+// Budget helper functions
+export const getTotalExpenses = (userData: UserData): number => {
+  return userData.budget.expenses.reduce((sum, expense) => sum + expense.amount, 0)
+}
+
+export const getPaidExpenses = (userData: UserData): number => {
+  return userData.budget.expenses
+    .filter(e => e.isPaid)
+    .reduce((sum, expense) => sum + expense.amount, 0)
+}
+
+export const getRemainingBudget = (userData: UserData): number => {
+  const totalExpenses = getTotalExpenses(userData)
+  return userData.budget.totalBudget - totalExpenses
+}
+
+export const getSavingsProgress = (userData: UserData): number => {
+  if (userData.budget.savingsGoal === 0) return 0
+  return Math.round((userData.budget.currentSavings / userData.budget.savingsGoal) * 100)
+}
+
+export const getExpensesByCategory = (userData: UserData) => {
+  const categories = ['registration', 'gear', 'nutrition', 'travel', 'coaching', 'medical', 'other']
+  return categories.map(cat => ({
+    category: cat,
+    total: userData.budget.expenses
+      .filter(e => e.category === cat)
+      .reduce((sum, e) => sum + e.amount, 0),
+  }))
 }

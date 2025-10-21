@@ -20,6 +20,23 @@ A futuristic, minimalist web app designed to track your journey from day one to 
 - **Progress Bar**: Overall completion percentage
 - **Props Button**: Community engagement and self-celebration
 
+### Race Budget Tracker
+- **Expense Tracking**: Track all race-related expenses by category
+  - Registration fees
+  - Gear & equipment
+  - Nutrition & supplements
+  - Travel & lodging
+  - Coaching & training
+  - Medical & insurance
+  - Other expenses
+- **Budget Management**: Set total budget and savings goals
+- **Expense Status**: Mark expenses as paid/unpaid
+- **Category Breakdown**: Visual breakdown of spending by category
+- **Savings Progress**: Track progress toward your savings goal
+- **Money Tips**: 18+ actionable tips to earn and save money for racing
+  - 8 ways to earn money (sell gear, freelance, volunteer benefits, etc.)
+  - 10 ways to save money (buy used, DIY nutrition, early registration, etc.)
+
 ### Gamification
 - Earn streaks for consecutive days of task completion
 - Reflection form triggered when tasks are missed
@@ -97,6 +114,30 @@ On your first visit, you'll see a setup modal where you can configure:
 
 4. **Give Props**: Celebrate your progress by clicking the Props button
 
+### Budget Management Workflow
+
+1. **Switch to Budget View**: Click "Race Budget" tab at the top
+
+2. **Set Your Budget**:
+   - Click on the "Total Budget" amount to edit
+   - Click on savings amounts to set current savings and goal
+
+3. **Add Expenses**:
+   - Click "Add Expense" button
+   - Select category, enter name and amount
+   - Mark as paid if already purchased
+   - Add optional notes
+
+4. **Manage Expenses**:
+   - Click checkmark to toggle paid/unpaid status
+   - Click trash icon to delete an expense
+   - View category breakdown to see where your money goes
+
+5. **Explore Money Tips**:
+   - Browse "Earn Money" tips for ways to fund your race
+   - Check "Save Money" tips to reduce costs
+   - Click on any tip to expand for full details
+
 ### Customization
 
 Tasks are automatically generated on a rotating basis. To customize:
@@ -123,8 +164,10 @@ project-ironmind/
 │   ├── layout.tsx            # Root layout
 │   └── page.tsx              # Home page
 ├── components/
+│   ├── BudgetTracker.tsx     # Budget and expense tracking
 │   ├── Header.tsx            # Day counter and countdown
 │   ├── MissionControl.tsx    # Main dashboard component
+│   ├── MoneyTips.tsx         # Earning and saving tips
 │   ├── ReflectionModal.tsx   # Reflection form
 │   ├── SetupModal.tsx        # First-time setup
 │   ├── StatsPanel.tsx        # Stats and graphs sidebar

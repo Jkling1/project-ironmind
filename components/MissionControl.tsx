@@ -17,6 +17,8 @@ import TaskCard from './TaskCard'
 import StatsPanel from './StatsPanel'
 import ReflectionModal from './ReflectionModal'
 import SetupModal from './SetupModal'
+import BudgetTracker from './BudgetTracker'
+import MoneyTips from './MoneyTips'
 
 export default function MissionControl() {
   const [userData, setUserData] = useState<UserData | null>(null)
@@ -25,6 +27,7 @@ export default function MissionControl() {
   const [showSetup, setShowSetup] = useState(false)
   const [dayNumber, setDayNumber] = useState(1)
   const [daysUntilRace, setDaysUntilRace] = useState(365)
+  const [activeView, setActiveView] = useState<'tasks' | 'budget'>('tasks')
 
   useEffect(() => {
     const data = loadUserData()
@@ -156,6 +159,14 @@ export default function MissionControl() {
     setDaysUntilRace(getDaysUntilRace(raceDate))
   }
 
+  const handleUpdateBudget = (budget: UserData['budget']) => {
+    if (!userData) return
+
+    const updatedUserData = { ...userData, budget }
+    saveUserData(updatedUserData)
+    setUserData(updatedUserData)
+  }
+
   if (!userData || !todayProgress) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -175,7 +186,32 @@ export default function MissionControl() {
     <div className="max-w-7xl mx-auto">
       <Header dayNumber={dayNumber} daysUntilRace={daysUntilRace} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+      {/* View Toggle */}
+      <div className="flex gap-4 mt-8 mb-6">
+        <button
+          onClick={() => setActiveView('tasks')}
+          className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${
+            activeView === 'tasks'
+              ? 'bg-neon-blue/20 border border-neon-blue text-neon-blue shadow-neon-blue'
+              : 'bg-dark-card border border-dark-border text-gray-400 hover:text-white'
+          }`}
+        >
+          Daily Protocol
+        </button>
+        <button
+          onClick={() => setActiveView('budget')}
+          className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all ${
+            activeView === 'budget'
+              ? 'bg-neon-green/20 border border-neon-green text-neon-green shadow-neon-green'
+              : 'bg-dark-card border border-dark-border text-gray-400 hover:text-white'
+          }`}
+        >
+          Race Budget
+        </button>
+      </div>
+
+      {activeView === 'tasks' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-neon-blue text-glow-blue">
@@ -235,6 +271,16 @@ export default function MissionControl() {
           />
         </div>
       </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <BudgetTracker userData={userData} onUpdateBudget={handleUpdateBudget} />
+          </div>
+          <div className="lg:col-span-1">
+            <MoneyTips />
+          </div>
+        </div>
+      )}
 
       {showReflection && (
         <ReflectionModal
