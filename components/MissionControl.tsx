@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { UserData, DayProgress } from '@/types'
+import { UserData, DayProgress, TrainingPhase } from '@/types'
 import {
   loadUserData,
   saveUserData,
@@ -11,6 +11,8 @@ import {
   getTodayProgress,
   createDailyTasks,
   updateStreak,
+  getCurrentPhase,
+  getDailyLesson,
 } from '@/lib/storage'
 import Header from './Header'
 import TaskCard from './TaskCard'
@@ -19,6 +21,7 @@ import ReflectionModal from './ReflectionModal'
 import SetupModal from './SetupModal'
 import BudgetTracker from './BudgetTracker'
 import MoneyTips from './MoneyTips'
+import DailyLesson from './DailyLesson'
 
 export default function MissionControl() {
   const [userData, setUserData] = useState<UserData | null>(null)
@@ -27,6 +30,7 @@ export default function MissionControl() {
   const [showSetup, setShowSetup] = useState(false)
   const [dayNumber, setDayNumber] = useState(1)
   const [daysUntilRace, setDaysUntilRace] = useState(365)
+  const [currentPhase, setCurrentPhase] = useState<TrainingPhase>('FOUNDATION')
   const [activeView, setActiveView] = useState<'tasks' | 'budget'>('tasks')
 
   useEffect(() => {
@@ -61,8 +65,11 @@ export default function MissionControl() {
     }
 
     setTodayProgress(progress)
-    setDayNumber(getCurrentDayNumber(data.startDate))
-    setDaysUntilRace(getDaysUntilRace(data.raceDate))
+    const dayNum = getCurrentDayNumber(data.startDate)
+    const daysToRace = getDaysUntilRace(data.raceDate)
+    setDayNumber(dayNum)
+    setDaysUntilRace(daysToRace)
+    setCurrentPhase(getCurrentPhase(daysToRace))
   }, [])
 
   const handleTaskToggle = (taskType: 'fitness' | 'mindset' | 'growth') => {
@@ -182,9 +189,11 @@ export default function MissionControl() {
     todayProgress.mindsetTask.completed &&
     todayProgress.growthTask.completed
 
+  const dailyLesson = getDailyLesson(dayNumber, currentPhase)
+
   return (
     <div className="max-w-7xl mx-auto">
-      <Header dayNumber={dayNumber} daysUntilRace={daysUntilRace} />
+      <Header dayNumber={dayNumber} daysUntilRace={daysUntilRace} phase={currentPhase} />
 
       {/* View Toggle */}
       <div className="flex gap-4 mt-8 mb-6">
@@ -236,6 +245,9 @@ export default function MissionControl() {
               color="green"
             />
           </div>
+
+          {/* Daily Lesson */}
+          <DailyLesson lesson={dailyLesson} />
 
           {allTasksCompleted && todayProgress.goalAchieved === null && (
             <div className="bg-dark-card border border-neon-pink rounded-lg p-6 shadow-neon-pink">

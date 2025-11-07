@@ -1,4 +1,4 @@
-import { UserData, DayProgress, DailyTask } from '@/types'
+import { UserData, DayProgress, DailyTask, TrainingPhase, DailyLesson } from '@/types'
 import { format, differenceInDays, startOfDay, subDays } from 'date-fns'
 
 const STORAGE_KEY = 'ironmind_user_data'
@@ -21,6 +21,12 @@ export const getDefaultUserData = (): UserData => {
       savingsGoal: 0,
       currentSavings: 0,
     },
+    dailyLogs: [],
+    streaks: {
+      training_streak_days: 0,
+      alcohol_free_streak_days: 0,
+      home_cooked_streak_days: 0,
+    },
   }
 }
 
@@ -39,6 +45,18 @@ export const loadUserData = (): UserData => {
         expenses: [],
         savingsGoal: 0,
         currentSavings: 0,
+      }
+    }
+
+    // Backwards compatibility: add IronMind coach features
+    if (!data.dailyLogs) {
+      data.dailyLogs = []
+    }
+    if (!data.streaks) {
+      data.streaks = {
+        training_streak_days: 0,
+        alcohol_free_streak_days: 0,
+        home_cooked_streak_days: 0,
       }
     }
 
@@ -219,4 +237,99 @@ export const getExpensesByCategory = (userData: UserData) => {
       .filter(e => e.category === cat)
       .reduce((sum, e) => sum + e.amount, 0),
   }))
+}
+
+// IronMind Coach Functions
+export const getCurrentPhase = (daysToRace: number): TrainingPhase => {
+  if (daysToRace < 0) return 'POST-RACE'
+  if (daysToRace === 0) return 'RACE DAY'
+  if (daysToRace <= 7) return 'RACE WEEK'
+  if (daysToRace <= 30) return 'TAPER'
+  if (daysToRace <= 90) return 'RACE-SHARPEN'
+  if (daysToRace <= 180) return 'PEAK BUILD'
+  if (daysToRace <= 270) return 'BUILD'
+  return 'FOUNDATION'
+}
+
+export const updateStreaks = (userData: UserData): UserData => {
+  const logs = [...userData.dailyLogs].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
+  // Calculate training streak
+  let trainingStreak = 0
+  let alcoholFreeStreak = 0
+  let homeCookedStreak = 0
+  const today = startOfDay(new Date())
+
+  for (let i = 0; i < logs.length; i++) {
+    const expectedDate = subDays(today, i)
+    const logDate = startOfDay(new Date(logs[i].date))
+
+    if (format(logDate, 'yyyy-MM-dd') !== format(expectedDate, 'yyyy-MM-dd')) {
+      break
+    }
+
+    // Training streak: completed training and compliance > 70%
+    if (logs[i].training.completed && logs[i].compliance_score >= 70) {
+      trainingStreak++
+    } else if (trainingStreak === 0) {
+      // Only break streak if we haven't started counting yet
+    } else {
+      break
+    }
+
+    // Alcohol-free streak
+    if (!logs[i].metrics.alcohol_today) {
+      alcoholFreeStreak = i + 1
+    }
+
+    // Home-cooked streak
+    if (logs[i].metrics.home_cooked_meal) {
+      homeCookedStreak = i + 1
+    }
+  }
+
+  return {
+    ...userData,
+    streaks: {
+      training_streak_days: trainingStreak,
+      alcohol_free_streak_days: alcoholFreeStreak,
+      home_cooked_streak_days: homeCookedStreak,
+    },
+  }
+}
+
+export const getDailyLesson = (dayIndex: number, phase: TrainingPhase): DailyLesson => {
+  const lessons: DailyLesson[] = [
+    {
+      id: 'foundation-1',
+      day: 1,
+      phase: 'FOUNDATION',
+      category: 'psychology',
+      title: 'Identity Before Action',
+      content: 'You don\'t become an Ironman on race day. You become one today. Every decision you make either confirms or contradicts that identity. The person who finishes Ironman Florida doesn\'t suddenly appear in 365 days—they\'re built one boring Tuesday at a time. Start thinking: "What would the person who finishes an Ironman do right now?"'
+    },
+    {
+      id: 'foundation-2',
+      day: 2,
+      phase: 'FOUNDATION',
+      category: 'training',
+      title: 'Zone 2 Is Your Foundation',
+      content: 'Most of your training (80%) should feel absurdly easy. Zone 2 = conversational pace. You should be able to talk in full sentences. This builds aerobic base—your engine for endurance. Going hard every session trains your ego, not your mitochondria. Slow down to go long.'
+    },
+    {
+      id: 'foundation-3',
+      day: 3,
+      phase: 'FOUNDATION',
+      category: 'systems',
+      title: 'Environment Beats Willpower',
+      content: 'Willpower is finite. Environment is engineered. Lay out your workout gear the night before. Prep tomorrow\'s meals today. Put your phone in another room before bed. Design your space so the default action is the right action. Discipline is just good systems in disguise.'
+    },
+    // Add more lessons as needed
+  ]
+
+  // Find lesson for this day or cycle through available lessons
+  const lesson = lessons.find(l => l.day === dayIndex) || lessons[dayIndex % lessons.length]
+  return lesson
 }

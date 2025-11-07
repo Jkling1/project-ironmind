@@ -3,7 +3,7 @@
 import { UserData } from '@/types'
 import { getWeeklyData } from '@/lib/storage'
 import { BarChart, Bar, XAxis, ResponsiveContainer } from 'recharts'
-import { Trophy, Zap, Target, ThumbsUp } from 'lucide-react'
+import { Trophy, Zap, Target, ThumbsUp, Flame, Wine, UtensilsCrossed } from 'lucide-react'
 
 interface StatsPanelProps {
   userData: UserData
@@ -54,6 +54,51 @@ export default function StatsPanel({ userData, onProps, propsCount }: StatsPanel
                 {userData.totalDaysCompleted}
               </span>
             </div>
+          </div>
+
+          {/* IronMind Streaks */}
+          <div className="pt-4 border-t border-dark-border space-y-3">
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
+              IronMind Streaks
+            </h3>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-400" />
+                <span className="text-sm text-gray-400">Training</span>
+              </div>
+              <span className="text-lg font-bold text-orange-400">
+                {userData.streaks.training_streak_days} days
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Wine className="w-4 h-4 text-blue-400" />
+                <span className="text-sm text-gray-400">Alcohol-Free</span>
+              </div>
+              <span className="text-lg font-bold text-blue-400">
+                {userData.streaks.alcohol_free_streak_days} days
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UtensilsCrossed className="w-4 h-4 text-green-400" />
+                <span className="text-sm text-gray-400">Home-Cooked</span>
+              </div>
+              <span className="text-lg font-bold text-green-400">
+                {userData.streaks.home_cooked_streak_days} days
+              </span>
+            </div>
+
+            {userData.streaks.training_streak_days >= 7 && (
+              <div className="bg-neon-blue/10 border border-neon-blue rounded p-2 mt-2">
+                <p className="text-xs text-neon-blue text-center">
+                  Streak: {userData.streaks.training_streak_days} days aligned. This is how people quietly become dangerous.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Progress Bar */}
