@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { UserData, DayProgress, TrainingPhase } from '@/types'
+import { UserData, DayProgress, TrainingPhase, BaselineAssessment } from '@/types'
 import {
   loadUserData,
   saveUserData,
@@ -155,15 +155,19 @@ export default function MissionControl() {
     }
   }
 
-  const handleSetupComplete = (startDate: string, raceDate: string) => {
+  const handleSetupComplete = (startDate: string, raceDate: string, baseline: BaselineAssessment) => {
     const newUserData = loadUserData()
     newUserData.startDate = startDate
     newUserData.raceDate = raceDate
+    newUserData.baseline = baseline
     saveUserData(newUserData)
     setUserData(newUserData)
     setShowSetup(false)
-    setDayNumber(getCurrentDayNumber(startDate))
-    setDaysUntilRace(getDaysUntilRace(raceDate))
+    const dayNum = getCurrentDayNumber(startDate)
+    const daysToRace = getDaysUntilRace(raceDate)
+    setDayNumber(dayNum)
+    setDaysUntilRace(daysToRace)
+    setCurrentPhase(getCurrentPhase(daysToRace))
   }
 
   const handleUpdateBudget = (budget: UserData['budget']) => {
