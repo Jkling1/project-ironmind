@@ -1,0 +1,154 @@
+{
+  "dailyProtocol": {
+    "id": "dp_20251216_001",
+    "userId": 1,
+    "date": "2025-12-16",
+    "dayIndex": 1,
+    "daysToRace": 326,
+    "percentComplete": 0.3,
+
+    "phase": {
+      "key": "TRANSITION",
+      "name": "Transition Phase",
+      "color": "#6366F1",
+      "weekInPhase": 1,
+      "daysInPhase": 14
+    },
+
+    "weekNumber": 1,
+    "weekDayNumber": 2,
+    "isRecoveryWeek": false,
+
+    "sessions": [
+      {
+        "id": "session_001",
+        "type": "run",
+        "order": 1,
+        "planned": {
+          "duration": 30,
+          "distance": 3.0,
+          "intensity": "easy",
+          "zones": ["Z1-Z2: 30 minutes"],
+          "description": "Easy aerobic run. Focus on form and breathing. No watch pressure.",
+          "purpose": "Reintroduce running movement. Assess current fitness baseline.",
+          "alternatives": "If any pain: walk 30 minutes instead. Movement > intensity."
+        },
+        "actual": null
+      },
+      {
+        "id": "session_002",
+        "type": "strength",
+        "order": 2,
+        "planned": {
+          "duration": 30,
+          "intensity": "moderate",
+          "description": "Foundation strength: 3x10 squats, lunges, planks, bird-dogs. Bodyweight only.",
+          "purpose": "Build durable athlete foundation. Injury prevention focus.",
+          "alternatives": "Skip if extremely sore from yesterday."
+        },
+        "actual": null
+      }
+    ],
+
+    "dailyLoadTarget": 25,
+
+    "nutrition": {
+      "preWorkout": "Light carbs 1hr before: banana + coffee",
+      "duringWorkout": "Water only (under 60min)",
+      "postWorkout": "Protein within 30min: shake or eggs",
+      "dailyProtein": "Aim for 180g+ protein today",
+      "hydration": "Half your bodyweight in ounces (100oz+)",
+      "sodium": "Normal diet, no extra needed",
+      "notes": "Practice eating breakfast before training"
+    },
+
+    "recovery": {
+      "sleepTarget": "8 hours minimum",
+      "stretching": "10min post-workout: hips, calves, hamstrings",
+      "foamRolling": true,
+      "iceBath": false,
+      "compression": false,
+      "notes": "Prioritize sleep over everything else this week"
+    },
+
+    "mindset": {
+      "prompt": "Why did you choose Ironman Florida?",
+      "affirmation": "I am building the version of myself I respect.",
+      "focus": "Show up. Don't judge the output.",
+      "mantra": "One day, one session, one breath."
+    },
+
+    "admin": [
+      "Set alarm for tomorrow 6:00 AM",
+      "Prep workout clothes tonight",
+      "Check bike tire pressure",
+      "Schedule pool time for Wednesday"
+    ],
+
+    "guardrails": {
+      "sleepMin": 7.0,
+      "maxIntensitySessions": 0,
+      "requiresRestIfSoreAbove": 7,
+      "notes": "This is transition. If tired, rest. No heroes week 1."
+    },
+
+    "whyThisDayMatters": "Day 1 sets the tone for 326 days. You're not trying to be fast today—you're showing your body that you're serious about consistency. Every Ironman starts with one easy run.",
+
+    "coachNote": "Welcome to Day 1. No pressure. Just movement. Check in after and tell me how it felt.",
+
+    "completed": false,
+    "completedAt": null,
+    "adherenceScore": null
+  },
+
+  "exampleCompletedProtocol": {
+    "id": "dp_20251217_002",
+    "userId": 1,
+    "date": "2025-12-17",
+    "dayIndex": 2,
+    "daysToRace": 325,
+    "percentComplete": 0.6,
+
+    "phase": {
+      "key": "TRANSITION",
+      "name": "Transition Phase",
+      "color": "#6366F1"
+    },
+
+    "weekNumber": 1,
+    "weekDayNumber": 3,
+    "isRecoveryWeek": false,
+
+    "sessions": [
+      {
+        "id": "session_003",
+        "type": "swim",
+        "order": 1,
+        "planned": {
+          "duration": 30,
+          "distance": 800,
+          "intensity": "easy",
+          "zones": ["Warm-up: 200y", "Main: 4x100 @ 2:00", "Cool-down: 200y"],
+          "description": "Pool reintroduction. Focus on relaxation and breathing rhythm.",
+          "purpose": "Assess swim baseline. Get comfortable in water again.",
+          "alternatives": "If no pool: 30min walk instead"
+        },
+        "actual": {
+          "completed": true,
+          "duration": 32,
+          "distance": 800,
+          "avgHeartRate": 128,
+          "avgPace": "2:00/100y",
+          "rpe": 4,
+          "notes": "Felt good. Breathing was smooth. Right shoulder a bit tight.",
+          "feeling": "good"
+        }
+      }
+    ],
+
+    "dailyLoadTarget": 20,
+    "completed": true,
+    "completedAt": "2025-12-17T18:30:00Z",
+    "adherenceScore": 100
+  }
+}
