@@ -13,7 +13,7 @@ async function testProtocolGeneration() {
   try {
     // 1. Ensure user exists
     console.log('1️⃣  Creating/verifying user...');
-    const user = getOrCreateUser(1);
+    const user = getOrCreateUser(1) as any;
     console.log(`   ✅ User: ${user.name} (ID: ${user.id})`);
     console.log(`   📅 Race Date: ${user.race_date}`);
     console.log('');
