@@ -149,9 +149,19 @@ export default function TodayDashboard() {
   }
 
   async function fetchStreaks() {
-    // TODO: Implement streaks API endpoint
-    // For now, use mock data
-    setStreaks({ training_current: 0, checkin_current: 0 });
+    try {
+      const response = await fetch('/api/streaks');
+      if (response.ok) {
+        const data = await response.json();
+        setStreaks({
+          training_current: data.streaks.training?.current || 0,
+          checkin_current: data.streaks.checkin?.current || 0
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch streaks:', err);
+      setStreaks({ training_current: 0, checkin_current: 0 });
+    }
   }
 
   function formatDate(dateString: string): string {
