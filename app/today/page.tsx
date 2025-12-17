@@ -6,7 +6,14 @@ import SessionCard from '@/components/SessionCard';
 import PhaseIndicator from '@/components/PhaseIndicator';
 import ProgressBar from '@/components/ProgressBar';
 import CheckInPrompt from '@/components/CheckInPrompt';
-import { Calendar, TrendingUp, Flame } from 'lucide-react';
+import { ToastContainer, useToast } from '@/components/Toast';
+import { DashboardSkeleton } from '@/components/LoadingSkeleton';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { useKeyboardShortcuts, COMMON_SHORTCUTS, KeyboardShortcutHelp } from '@/hooks/useKeyboardShortcuts';
+import { OfflineBanner, useOfflineDetector } from '@/hooks/useOfflineDetector';
+import { cacheDailyProtocol, getCachedDailyProtocol } from '@/lib/localStorage';
+import { Calendar, TrendingUp, Flame, Keyboard } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Session {
   id: number;
@@ -56,8 +63,34 @@ export default function TodayDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
+  const router = useRouter();
+  const toast = useToast();
+  const { isOnline } = useOfflineDetector();
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      ...COMMON_SHORTCUTS.OPEN_PROGRESS,
+      callback: () => router.push('/progress'),
+    },
+    {
+      ...COMMON_SHORTCUTS.OPEN_CHECKIN,
+      callback: () => {
+        if (!hasCheckedIn) {
+          toast.info('Check-in form is below');
+        } else {
+          toast.success('You already checked in today!');
+        }
+      },
+    },
+    {
+      ...COMMON_SHORTCUTS.HELP,
+      callback: () => setShowShortcuts(true),
+    },
+  ]);
 
   useEffect(() => {
     fetchTodayProtocol();
@@ -67,20 +100,43 @@ export default function TodayDashboard() {
 
   async function fetchTodayProtocol() {
     try {
-      const response = await fetch(`/api/protocol/${today}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('No protocol found. Generate your protocol first.');
-        }
-        throw new Error('Failed to fetch protocol');
+      // Try cache first
+      const cached = getCachedDailyProtocol(today);
+      if (cached && isOnline) {
+        setProtocol(cached);
+        setLoading(false);
+        // Fetch fresh data in background
+        fetchFreshProtocol();
+        return;
       }
-      const data = await response.json();
-      setProtocol(data.protocol);
+
+      if (!isOnline && cached) {
+        setProtocol(cached);
+        setLoading(false);
+        toast.warning('Showing cached data (offline)');
+        return;
+      }
+
+      await fetchFreshProtocol();
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function fetchFreshProtocol() {
+    const response = await fetch(`/api/protocol/${today}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('No protocol found. Generate your protocol first.');
+      }
+      throw new Error('Failed to fetch protocol');
+    }
+    const data = await response.json();
+    setProtocol(data.protocol);
+    cacheDailyProtocol(today, data.protocol);
   }
 
   async function checkIfCheckedIn() {
@@ -115,15 +171,14 @@ export default function TodayDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-white text-2xl font-light"
-        >
-          Loading your protocol...
-        </motion.div>
-      </div>
+      <ErrorBoundary>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 relative overflow-hidden">
+          <OfflineBanner />
+          <div className="relative z-10 max-w-4xl mx-auto px-6 py-12">
+            <DashboardSkeleton />
+          </div>
+        </div>
+      </ErrorBoundary>
     );
   }
 
@@ -156,9 +211,37 @@ export default function TodayDashboard() {
   const sessionsProgress = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 relative overflow-hidden">
-      {/* Animated background blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 relative overflow-hidden">
+        {/* Toast Notifications */}
+        <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
+
+        {/* Offline Banner */}
+        <OfflineBanner />
+
+        {/* Keyboard Shortcuts Help */}
+        {showShortcuts && (
+          <KeyboardShortcutHelp
+            shortcuts={[
+              { ...COMMON_SHORTCUTS.OPEN_PROGRESS, callback: () => router.push('/progress') },
+              { ...COMMON_SHORTCUTS.OPEN_CHECKIN, callback: () => {} },
+              { ...COMMON_SHORTCUTS.HELP, callback: () => setShowShortcuts(false) },
+            ]}
+            onClose={() => setShowShortcuts(false)}
+          />
+        )}
+
+        {/* Keyboard Shortcut Hint */}
+        <button
+          onClick={() => setShowShortcuts(true)}
+          className="fixed bottom-6 right-6 p-3 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-full transition-colors z-40"
+          title="Keyboard Shortcuts (Shift + ?)"
+        >
+          <Keyboard className="w-5 h-5 text-white/60" />
+        </button>
+
+        {/* Animated background blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -377,5 +460,6 @@ export default function TodayDashboard() {
         )}
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
